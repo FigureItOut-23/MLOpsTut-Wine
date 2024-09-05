@@ -3,7 +3,7 @@ on: [push]
 jobs:
   train-and-report:
     runs-on: ubuntu-latest
-    #container: docker://ghcr.io/iterative/cml:0-dvc2-base1
+    container: docker://ghcr.io/iterative/cml:0-dvc2-base1
     steps:
       - uses: actions/checkout@v3
       - name: Train model
@@ -13,10 +13,17 @@ jobs:
           pip install -r requirements.txt
           python train.py  # generate plot.png
 
-          echo "MODEL METRICS"
-          cat metrics.txt
-
           # Create CML report
-          # cat metrics.txt >> report.md
+          echo "## MODEL METRICS" >> report.md
+          cat metrics.txt >> report.md
+
+          echo "## Data Viz" >> report.md
+          cml-publish feature_importance.png --md >> report.md
+          cml-publish residuals.png --md >> report.md
+          cml-send-comment report.md
+
+          #cml-publish embeds the png as a markdown image in report.md
+          #--md indicates that the image should be formatted in Markdown
+          
           # echo '![](./plot.png "Confusion Matrix")' >> report.md
           # cml comment create report.md
